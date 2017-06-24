@@ -23,3 +23,4 @@ INSTALLED_APPS = [
 
 DOMAIN = 'http://testserver'
 ROOT_URLCONF = 'softdelete.urls'
+SECRET_KEY = 'kh))39xax-(^9$o-o*e5@3pv(r!11!#$m5+q+tc85i=dg_+#%9'
