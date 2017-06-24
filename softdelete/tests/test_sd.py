@@ -46,18 +46,18 @@ class BaseTest(TestCase):
 class InitialTest(BaseTest):
 
     def test_simple_delete(self):
-        self.assertEquals(2, TestModelOne.objects.count())
-        self.assertEquals(10, TestModelTwo.objects.count())
-        self.assertEquals(2,
+        self.assertEqual(2, TestModelOne.objects.count())
+        self.assertEqual(10, TestModelTwo.objects.count())
+        self.assertEqual(2,
                           TestModelOne.objects.all_with_deleted().count())
-        self.assertEquals(10,
+        self.assertEqual(10,
                           TestModelTwo.objects.all_with_deleted().count())
         self.tmo1.delete()
-        self.assertEquals(1, TestModelOne.objects.count())
-        self.assertEquals(5, TestModelTwo.objects.count())
-        self.assertEquals(2,
+        self.assertEqual(1, TestModelOne.objects.count())
+        self.assertEqual(5, TestModelTwo.objects.count())
+        self.assertEqual(2,
                           TestModelOne.objects.all_with_deleted().count())
-        self.assertEquals(10,
+        self.assertEqual(10,
                           TestModelTwo.objects.all_with_deleted().count())
 
 class DeleteTest(BaseTest):
@@ -82,8 +82,8 @@ class DeleteTest(BaseTest):
         models.signals.post_delete.connect(self.post_delete)
         pre_soft_delete.connect(self.pre_soft_delete)
         post_soft_delete.connect(self.post_soft_delete)
-        self.assertEquals(2, TestModelOne.objects.count())
-        self.assertEquals(10, TestModelTwo.objects.count())
+        self.assertEqual(2, TestModelOne.objects.count())
+        self.assertEqual(10, TestModelTwo.objects.count())
         self.assertFalse(self.tmo1.deleted)
         self.assertFalse(self.pre_delete_called)
         self.assertFalse(self.post_delete_called)
@@ -106,19 +106,19 @@ class DeleteTest(BaseTest):
     def test_delete(self):
         self._pretest()
         self.tmo1.delete()
-        self.assertEquals(self.cs_count+1, ChangeSet.objects.count())
-        self.assertEquals(self.rs_count+56, SoftDeleteRecord.objects.count()) 
+        self.assertEqual(self.cs_count+1, ChangeSet.objects.count())
+        self.assertEqual(self.rs_count+56, SoftDeleteRecord.objects.count()) 
         self._posttest()
 
     def test_hard_delete(self):
         self._pretest()
         tmo_tmp = TestModelOne.objects.create(extra_bool=True)
         tmo_tmp.delete()
-        self.assertEquals(self.cs_count+1, ChangeSet.objects.count())
-        self.assertEquals(self.rs_count+1, SoftDeleteRecord.objects.count())
+        self.assertEqual(self.cs_count+1, ChangeSet.objects.count())
+        self.assertEqual(self.rs_count+1, SoftDeleteRecord.objects.count())
         tmo_tmp.delete()
-        self.assertEquals(self.cs_count, ChangeSet.objects.count())
-        self.assertEquals(self.rs_count, SoftDeleteRecord.objects.count())
+        self.assertEqual(self.cs_count, ChangeSet.objects.count())
+        self.assertEqual(self.rs_count, SoftDeleteRecord.objects.count())
         self.assertRaises(TestModelOne.DoesNotExist,
                           TestModelOne.objects.get,
                           pk=tmo_tmp.pk)
@@ -127,8 +127,8 @@ class DeleteTest(BaseTest):
     def test_filter_delete(self):
         self._pretest()
         TestModelOne.objects.filter(pk=1).delete()
-        self.assertEquals(self.cs_count+1, ChangeSet.objects.count())
-        self.assertEquals(self.rs_count+56, SoftDeleteRecord.objects.count())
+        self.assertEqual(self.cs_count+1, ChangeSet.objects.count())
+        self.assertEqual(self.rs_count+56, SoftDeleteRecord.objects.count())
         self._posttest()
 
 class AdminTest(BaseTest):
@@ -142,10 +142,10 @@ class AdminTest(BaseTest):
         self.assertFalse(self.tmo1.deleted)
         client.login(username='test-user', password='test')
         tmo = client.get('/admin/test_softdelete_app/testmodelone/1/')
-        self.assertEquals(tmo.status_code, 200)
+        self.assertEqual(tmo.status_code, 200)
         tmo = client.post('/admin/test_softdelete_app/testmodelone/1/',
                           {'extra_bool': '1', 'deleted': '1'})
-        self.assertEquals(tmo.status_code, 302)
+        self.assertEqual(tmo.status_code, 302)
         self.tmo1 = TestModelOne.objects.get(pk=self.tmo1.pk)
         self.assertTrue(self.tmo1.deleted)
 
@@ -155,11 +155,11 @@ class AuthorizationTest(BaseTest):
         cl.login(username='NonSoftdeleteUser',
                  password='NonSoftdeletePassword')
         rv = cl.get(reverse('softdelete.changeset.list'))
-        self.assertEquals(rv.status_code, 302)
+        self.assertEqual(rv.status_code, 302)
         rv = cl.get(reverse('softdelete.changeset.view', args=(1,)))
-        self.assertEquals(rv.status_code, 302)
+        self.assertEqual(rv.status_code, 302)
         rv = cl.get(reverse('softdelete.changeset.undelete', args=(1,)))
-        self.assertEquals(rv.status_code, 302)
+        self.assertEqual(rv.status_code, 302)
 
 class UndeleteTest(BaseTest):
     def pre_undelete(self, *args, **kwargs):
@@ -178,15 +178,15 @@ class UndeleteTest(BaseTest):
         self.cs_count = ChangeSet.objects.count()
         self.rs_count = SoftDeleteRecord.objects.count()
         self.tmo1.delete()
-        self.assertEquals(self.cs_count+1, ChangeSet.objects.count())
-        self.assertEquals(self.rs_count+56, SoftDeleteRecord.objects.count())
+        self.assertEqual(self.cs_count+1, ChangeSet.objects.count())
+        self.assertEqual(self.rs_count+56, SoftDeleteRecord.objects.count())
         self.tmo1 = TestModelOne.objects.get(pk=self.tmo1.pk)
         self.tmo2 = TestModelOne.objects.get(pk=self.tmo2.pk)
         self.assertTrue(self.tmo1.deleted)
         self.assertFalse(self.tmo2.deleted)
         self.tmo1.undelete()
-        self.assertEquals(0, ChangeSet.objects.count())
-        self.assertEquals(0, SoftDeleteRecord.objects.count())
+        self.assertEqual(0, ChangeSet.objects.count())
+        self.assertEqual(0, SoftDeleteRecord.objects.count())
         self.tmo1 = TestModelOne.objects.get(pk=self.tmo1.pk)
         self.tmo2 = TestModelOne.objects.get(pk=self.tmo2.pk)
         self.assertFalse(self.tmo1.deleted)
@@ -195,15 +195,15 @@ class UndeleteTest(BaseTest):
         self.assertTrue(self.post_undelete_called)
 
         self.tmo1.delete()
-        self.assertEquals(self.cs_count+1, ChangeSet.objects.count())
-        self.assertEquals(self.rs_count+56, SoftDeleteRecord.objects.count())
+        self.assertEqual(self.cs_count+1, ChangeSet.objects.count())
+        self.assertEqual(self.rs_count+56, SoftDeleteRecord.objects.count())
         self.tmo1 = TestModelOne.objects.get(pk=self.tmo1.pk)
         self.tmo2 = TestModelOne.objects.get(pk=self.tmo2.pk)
         self.assertTrue(self.tmo1.deleted)
         self.assertFalse(self.tmo2.deleted)
         TestModelOne.objects.deleted_set().undelete()
-        self.assertEquals(0, ChangeSet.objects.count())
-        self.assertEquals(0, SoftDeleteRecord.objects.count())
+        self.assertEqual(0, ChangeSet.objects.count())
+        self.assertEqual(0, SoftDeleteRecord.objects.count())
         self.tmo1 = TestModelOne.objects.get(pk=self.tmo1.pk)
         self.tmo2 = TestModelOne.objects.get(pk=self.tmo2.pk)
         self.assertFalse(self.tmo1.deleted)
@@ -227,18 +227,18 @@ class SoftDeleteRelatedFieldLookupsTests(BaseTest):
         tmt1 = TestModelTwo.objects.create(extra_int=100, tmo=self.tmo1)
         tmt2 = TestModelTwo.objects.create(extra_int=100, tmo=self.tmo2)
 
-        self.assertEquals(self.tmo1.tmts.filter(extra_int=100).count(), 1)
-        self.assertEquals(self.tmo1.tmts.filter(extra_int=100)[0].pk, tmt1.pk)
-        self.assertEquals(self.tmo2.tmts.filter(extra_int=100).count(), 1)
-        self.assertEquals(self.tmo2.tmts.filter(extra_int=100)[0].pk, tmt2.pk)
+        self.assertEqual(self.tmo1.tmts.filter(extra_int=100).count(), 1)
+        self.assertEqual(self.tmo1.tmts.filter(extra_int=100)[0].pk, tmt1.pk)
+        self.assertEqual(self.tmo2.tmts.filter(extra_int=100).count(), 1)
+        self.assertEqual(self.tmo2.tmts.filter(extra_int=100)[0].pk, tmt2.pk)
 
-        self.assertEquals(self.tmo1.tmts.get(extra_int=100), tmt1)
-        self.assertEquals(self.tmo2.tmts.get(extra_int=100), tmt2)
+        self.assertEqual(self.tmo1.tmts.get(extra_int=100), tmt1)
+        self.assertEqual(self.tmo2.tmts.get(extra_int=100), tmt2)
 
         tmt1.delete()
-        self.assertEquals(self.tmo1.tmts.filter(extra_int=100).count(), 0)
+        self.assertEqual(self.tmo1.tmts.filter(extra_int=100).count(), 0)
         tmt1.undelete()
-        self.assertEquals(self.tmo1.tmts.filter(extra_int=100).count(), 1)
+        self.assertEqual(self.tmo1.tmts.filter(extra_int=100).count(), 1)
 
         tmt1.delete()
         tmt1.delete()
@@ -251,18 +251,18 @@ class SoftDeleteRelatedFieldLookupsTests(BaseTest):
         t32 = TestModelThree.objects.create(extra_int=100)
         TestModelThrough.objects.create(tmo1=self.tmo2, tmo3=t32)
 
-        self.assertEquals(self.tmo1.testmodelthree_set.filter(extra_int=100).count(), 1)
-        self.assertEquals(self.tmo1.testmodelthree_set.filter(extra_int=100)[0].pk, t31.pk)
-        self.assertEquals(self.tmo2.testmodelthree_set.filter(extra_int=100).count(), 1)
-        self.assertEquals(self.tmo2.testmodelthree_set.filter(extra_int=100)[0].pk, t32.pk)
+        self.assertEqual(self.tmo1.testmodelthree_set.filter(extra_int=100).count(), 1)
+        self.assertEqual(self.tmo1.testmodelthree_set.filter(extra_int=100)[0].pk, t31.pk)
+        self.assertEqual(self.tmo2.testmodelthree_set.filter(extra_int=100).count(), 1)
+        self.assertEqual(self.tmo2.testmodelthree_set.filter(extra_int=100)[0].pk, t32.pk)
 
-        self.assertEquals(self.tmo1.testmodelthree_set.get(extra_int=100), t31)
-        self.assertEquals(self.tmo2.testmodelthree_set.get(extra_int=100), t32)
+        self.assertEqual(self.tmo1.testmodelthree_set.get(extra_int=100), t31)
+        self.assertEqual(self.tmo2.testmodelthree_set.get(extra_int=100), t32)
 
         t31.delete()
-        self.assertEquals(self.tmo1.testmodelthree_set.filter(extra_int=100).count(), 0)
+        self.assertEqual(self.tmo1.testmodelthree_set.filter(extra_int=100).count(), 0)
         t31.undelete()
-        self.assertEquals(self.tmo1.testmodelthree_set.filter(extra_int=100).count(), 1)
+        self.assertEqual(self.tmo1.testmodelthree_set.filter(extra_int=100).count(), 1)
 
         t31.delete()
         t31.delete()

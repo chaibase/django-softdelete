@@ -50,36 +50,36 @@ class ViewTest(ViewBase):
                           reverse("softdelete.changeset.undelete", args=(pk,)),]:
             cli2 = Client()
             rv = cli2.get(view_name)
-            self.assertEquals(rv.status_code, 302)
+            self.assertEqual(rv.status_code, 302)
             self.assertTrue((settings.DOMAIN + reverse('auth_login')) in rv['Location'])
-            self.assertEquals(cli2.get(rv['Location']).status_code,
+            self.assertEqual(cli2.get(rv['Location']).status_code,
                               200)
             cli2.login(username='undelete_test', password='undelete_password')
             rv = cli2.get(view_name)
-            self.assertEquals(rv.status_code, 200)
+            self.assertEqual(rv.status_code, 200)
 
     def test_undelete(self):
         self.cs_count = ChangeSet.objects.count()
         self.rs_count = SoftDeleteRecord.objects.count()
         self.t_count = TestModelOne.objects.count()
         self.tmo1.delete()
-        self.assertEquals(self.t_count-1, TestModelOne.objects.count())
-        self.assertEquals(0, self.tmo1.tmos.count())
-        self.assertEquals(self.cs_count+1, ChangeSet.objects.count())
-        self.assertEquals(self.rs_count+11, SoftDeleteRecord.objects.count())
+        self.assertEqual(self.t_count-1, TestModelOne.objects.count())
+        self.assertEqual(0, self.tmo1.tmos.count())
+        self.assertEqual(self.cs_count+1, ChangeSet.objects.count())
+        self.assertEqual(self.rs_count+11, SoftDeleteRecord.objects.count())
         rv = self.client.get(reverse("softdelete.changeset.undelete",
                                      args=(ChangeSet.objects.latest("created_date").pk,)))
-        self.assertEquals(rv.status_code,200)
+        self.assertEqual(rv.status_code,200)
         rv = self.client.post(reverse("softdelete.changeset.undelete", 
                                      args=(ChangeSet.objects.latest("created_date").pk,)),
                              {'action': 'Undelete'})
-        self.assertEquals(rv.status_code, 302)
+        self.assertEqual(rv.status_code, 302)
         rv = self.client.get(rv['Location'])
-        self.assertEquals(rv.status_code, 200)
-        self.assertEquals(self.cs_count, ChangeSet.objects.count())
-        self.assertEquals(self.rs_count, SoftDeleteRecord.objects.count())
-        self.assertEquals(self.t_count, TestModelOne.objects.count())
-        self.assertEquals(10, self.tmo1.tmos.count())
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(self.cs_count, ChangeSet.objects.count())
+        self.assertEqual(self.rs_count, SoftDeleteRecord.objects.count())
+        self.assertEqual(self.t_count, TestModelOne.objects.count())
+        self.assertEqual(10, self.tmo1.tmos.count())
 
 class GroupViewTest(ViewTest):
     def __init__(self, *args, **kwargs):

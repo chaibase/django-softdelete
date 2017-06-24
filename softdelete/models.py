@@ -1,4 +1,4 @@
-from __future__ import unicode_literals
+
 
 import django
 
@@ -313,7 +313,7 @@ class SoftDeleteRecord(models.Model):
         self.content._do_undelete(using)
 
     def __str__(self):
-        return u'SoftDeleteRecord: (%s), (%s/%s), %s' % (
+        return 'SoftDeleteRecord: (%s), (%s/%s), %s' % (
             self.content,
             self.content_type,
             self.object_id,
